@@ -1,0 +1,10 @@
+name = "Bitpay"
+description = "Enables receipt of bitcoins for payment via Bitpay.com's API."
+dependencies[] = uc_payment
+files[] = uc_bitpay.module
+files[] = uc_bitpay.pages.inc
+files[] = uc_bitpay.install
+files[] = bp_lib.php
+files[] = bp_options.php
+package = Ubercart - payment
+core = 7.x
