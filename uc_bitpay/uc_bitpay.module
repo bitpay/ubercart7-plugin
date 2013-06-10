@@ -14,7 +14,7 @@
 require_once("bp_lib.php");
 require_once("uc_bitpay.pages.inc");
 
-define ('BITPAY_WEBSITE', "https://bitpay.com");
+define ('BITPAY_WEBSITE', "https://test.bp:8088");
  
 define ('BITPAY_SMALL_LOGO_FILE', "/img/bitpay23.png");
  
@@ -178,7 +178,7 @@ function uc_bitpay_settings_form() {
 /**
  * Implements hook_menu().
  */
-function uc_bitpay_uc_menu() {
+function uc_bitpay_menu() {
 
   // Always accessible, accepts POST data from Bitpay's servers
   // when being notified of status changes to an invoice.
@@ -492,7 +492,7 @@ function uc_payment_method_bitpay($op, &$order) {
 /**
  * Alter Ubercart's payment methods settings form to validate Bitpay settings
  */
-function uc_bitpay_form_alter(&$form, $form_state, $form_id) {
+function uc_bitpay_uc_form_alter(&$form, $form_state, $form_id) {
   switch ($form_id) {
     case 'uc_payment_methods_form':
       if (variable_get('uc_payment_method_bitpay_checkout', FALSE) || $form_state['values']['uc_payment_method_bitpay_checkout']) {
@@ -514,6 +514,7 @@ function uc_bitpay_settings_validate($form, &$form_state) {
 
   // validate the necessary admin settings
   // current API key shouldn't be blank
+  dpm($form_state);
   $c = $form_state['values']['uc_bitpay_current_api_key'];
   if ($c == '') {
     $err = TRUE;
@@ -701,7 +702,7 @@ function uc_bitpay_create_invoice($order, $price = FALSE) {
 
 
 /**
- * Implementation of hook_line_item
+ * Implementation of hook_uc_line_item
  *
  * Jay's tutorial on line items at:
  *   (http://www.jaypan.com/tutorial/ubercart-creating-line-items-tutorial)
@@ -714,7 +715,7 @@ function uc_bitpay_uc_line_item() {
 	$items[] = array(
 		'id' => 'uc_bitpay_fee', // You will use this ID in the javascript 
 		'title' => t('Bitcoin handling fee'), // This is the text that will be displayed
-		'callback' => 'uc_bitpay_line_item_callback', // This is the callback function
+		'callback' => 'uc_bitpay_uc_line_item_callback', // This is the callback function
 		'weight' => 5, // This is the position of the line item in the total process
 		'default' => TRUE,
 		'stored' => TRUE, // This tells Ubercart to store the submitted data

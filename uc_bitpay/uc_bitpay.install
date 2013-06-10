@@ -9,9 +9,9 @@
 
 
 /**
- * Implementation of hook_uc_requirements().
+ * Implementation of hook_requirements().
  */
-function uc_bitpay_uc_requirements($phase) {
+function uc_bitpay_requirements($phase) {
   $t = get_t();
 
   // BitPay's provided API code requires cURL.
@@ -32,9 +32,9 @@ function uc_bitpay_uc_requirements($phase) {
 
 
 /**
- * Implementation of hook_uc_schema().
+ * Implementation of hook_schema().
  */
-function uc_bitpay_uc_schema() {
+function uc_bitpay_schema() {
   $schema = array();
 
   $schema['uc_payment_bitpay'] = array(
@@ -86,12 +86,12 @@ function uc_bitpay_uc_schema() {
 }
 
 /**
- * Implementation of hook_uc_install().
+ * Implementation of hook_install().
  *
  * Installs the Bitpay module; particularly, installs the database
  * schema and alters orders statuses to include 'Bitpay pending'.
  */
-function uc_bitpay_uc_install() {
+function uc_bitpay_install() {
   // Set the module weight so it can override other modules.
   ///db_query("UPDATE {system} SET weight = 99 WHERE name = 'bitpay'");
   db_update('system')
@@ -129,11 +129,11 @@ function uc_bitpay_uc_install() {
 
 
 /**
- * Implementation of hook_uc_uninstall()
+ * Implementation of hook_uninstall()
  *
  * Uninstalls the Bitpay module.
  */
-function uc_bitpay_uc_uninstall() {
+function uc_bitpay_uninstall() {
   // Remove the schema
   //drupal_uninstall_schema('uc_bitpay');
 	// Remove relevant data from the DB
@@ -141,5 +141,13 @@ function uc_bitpay_uc_uninstall() {
   //db_query("DELETE FROM {variable} WHERE name LIKE 'uc_bitpay_%%'");
   db_delete('variable')
     ->condition('name', 'uc_bitpay_%%', 'LIKE')
+    ->execute(); 
+
+  db_delete('uc_order_statuses')
+    ->condition('order_status_id', 'bitpay_pending')
+    ->execute();
+
+  db_delete('uc_order_statuses')
+    ->condition('order_status_id', 'bitpay_paid')
     ->execute();
 }
