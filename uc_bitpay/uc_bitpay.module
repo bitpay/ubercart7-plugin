@@ -14,7 +14,7 @@
 require_once("bp_lib.php");
 require_once("uc_bitpay.pages.inc");
 
-define ('BITPAY_WEBSITE', "https://test.bp:8088");
+define ('BITPAY_WEBSITE', "https://bitpay.com");
  
 define ('BITPAY_SMALL_LOGO_FILE', "/img/bitpay23.png");
  
