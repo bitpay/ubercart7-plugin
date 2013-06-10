@@ -514,7 +514,7 @@ function uc_bitpay_settings_validate($form, &$form_state) {
 
   // validate the necessary admin settings
   // current API key shouldn't be blank
-  dpm($form_state);
+  
   $c = $form_state['values']['uc_bitpay_current_api_key'];
   if ($c == '') {
     $err = TRUE;
