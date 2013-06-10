@@ -346,11 +346,17 @@ function uc_payment_method_bitpay($op, &$order) {
 
         //changed due to uc_price() removal in Drupal 7.x
         $sign = variable_get('uc_currency_sign', 'BTC');
+        $after = variable_get('uc_sign_after_amount', false);
         $dec = variable_get('uc_currency_dec', '.');
         $thou = variable_get('uc_currency_thou', ',');
         $formNum = number_format($amt, 2, $dec, $thou);
-        $txt .= '<br /><br /><b>' . t('Please note that a bitcoin handling fee of') . ' ' . $sign . $formNum . ' ' . 
+        if ($after) {
+            $txt .= '<br /><br /><b>' . t('Please note that a bitcoin handling fee of') . ' ' . $formNum . $sign . ' ' . 
                  t('will be added to the final cost.') . '</b>';
+        } else {
+            $txt .= '<br /><br /><b>' . t('Please note that a bitcoin handling fee of') . ' ' . $sign . $formNum . ' ' . 
+                 t('will be added to the final cost.') . '</b>';
+        }
         
       }
       $details = $txt;
