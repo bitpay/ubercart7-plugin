@@ -16,7 +16,8 @@ function uc_bitpay_requirements($phase) {
 
   // BitPay's provided API code requires cURL.
   $has_curl = function_exists('curl_init');
-  if (variable_get('uc_payment_method_bitpay_checkout', FALSE)) {
+  
+  if (variable_get('uc_payment_method_bitpay_checkout', TRUE)) { 
     $requirements['uc_bitpay_curl'] = array(
       'title' => $t('cURL'),
       'value' => $has_curl ? $t('Enabled') : $t('Not found'),
@@ -93,7 +94,7 @@ function uc_bitpay_schema() {
  */
 function uc_bitpay_install() {
   // Set the module weight so it can override other modules.
-  ///db_query("UPDATE {system} SET weight = 99 WHERE name = 'bitpay'");
+ 
   db_update('system')
     ->fields(array(
       'weight' => 99,
@@ -101,11 +102,9 @@ function uc_bitpay_install() {
     ->condition('name', 'bitpay')
     ->execute();
   
-  // install the schema for the database
-  //drupal_install_schema('uc_bitpay');
 	// add two new order statuses
   $t = get_t();
-  //db_query("INSERT INTO {uc_order_statuses} (order_status_id, title, state, weight, locked) VALUES ('bitpay_pending', '%s', 'post_checkout', 7, 1);", $t('Bitpay - pending'));
+  
   $id = db_insert('uc_order_statuses')
     ->fields(array(
       'order_status_id' => 'bitpay_pending',
@@ -115,7 +114,7 @@ function uc_bitpay_install() {
       'locked' => 1,
     ))
     ->execute();
-  //db_query("INSERT INTO {uc_order_statuses} (order_status_id, title, state, weight, locked) VALUES ('bitpay_paid', '%s', 'payment_received', 7, 1);", $t('Bitpay - paid'));
+  
   $id = db_insert('uc_order_statuses')
     ->fields(array(
       'order_status_id' => 'bitpay_paid',
@@ -134,11 +133,9 @@ function uc_bitpay_install() {
  * Uninstalls the Bitpay module.
  */
 function uc_bitpay_uninstall() {
-  // Remove the schema
-  //drupal_uninstall_schema('uc_bitpay');
+  
 	// Remove relevant data from the DB
   
-  //db_query("DELETE FROM {variable} WHERE name LIKE 'uc_bitpay_%%'");
   db_delete('variable')
     ->condition('name', 'uc_bitpay_%%', 'LIKE')
     ->execute(); 

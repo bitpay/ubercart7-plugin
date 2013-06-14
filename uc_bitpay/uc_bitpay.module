@@ -261,7 +261,7 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
     foreach ($arg1->line_items as $k => $line_item) {
       if ($line_item['type'] == 'uc_bitpay_fee') {
         unset($arg1->line_items[$k]);
-        //db_query('DELETE FROM {uc_order_line_items} WHERE order_id = %d AND type = "%s"', $arg1->order_id, 'uc_bitpay_fee');
+        
         db_delete('uc_order_line_items')
           ->condition('order_id', $arg1->order_id)
           ->condition('type', 'uc_bitpay_fee')
@@ -298,7 +298,6 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
         // they actually paid the Bitpay invoice first (the status of
         // the invoice should be something other than 'new' or 'expired'.)
 
-        //$invoice_id = db_result(db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = %d", $arg1->order_id));
         $invoice_id = db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = :order_id", array(':order_id' => $arg1->order_id))->fetchField(); 
         $resp = bpGetInvoice($invoice_id, _get_bp_key());
         if (($resp['status'] == 'new') || ($resp['status'] == 'expired')) {
@@ -373,7 +372,6 @@ function uc_payment_method_bitpay($op, &$order) {
       // Check to see if a good invoice already exists
       $need_new_invoice = FALSE;
 
-      //$result = db_result(db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = %d", $order->order_id));
       $result = db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = :order_id", array(':order_id' => $order->order_id))->fetchField();
       // if no valid invoice is found, we need a new one
       if (($result === FALSE) || (!is_string($result))) {
@@ -406,7 +404,6 @@ function uc_payment_method_bitpay($op, &$order) {
         // Just in case of invoices created improperly or
         // expired, let's try to delete any that exist
 
-        //db_query("DELETE FROM {uc_payment_bitpay} WHERE order_id = %d", $order->order_id);
         db_delete('uc_payment_bitpay')
           ->condition('order_id', $order->order_id)
           ->execute();
@@ -423,9 +420,8 @@ function uc_payment_method_bitpay($op, &$order) {
             $notify_email = '';
           } 
           $txn_speed = variable_get('uc_bitpay_txn_speed', 'low');
-          $physical = (variable_get('uc_bitpay_physical', 1) == 1);
+          $physical = variable_get('uc_bitpay_physical', 1);
 
-          //db_query("INSERT INTO {uc_payment_bitpay} (invoice_id, order_id, notify_email, physical, txn_speed) VALUES ('%s', %d, '%s', %d, '%s')", $resp['id'], $order->order_id, $notify_email, $physical, $txn_speed);
           $id = db_insert('uc_payment_bitpay')
             ->fields(array(
               'invoice_id' => $resp['id'],
@@ -451,7 +447,6 @@ function uc_payment_method_bitpay($op, &$order) {
       // so long as the invoice now exists, we succeeded
       if ($success) {
 
-        //$invoice_id = db_result(db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = %d", $order->order_id));
         $invoice_id = db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = :order_id", array(':order_id' => $order->order_id))->fetchField();
         $resp = bpGetInvoice($invoice_id, _get_bp_key());
         $invoice_url = $resp['url'];
@@ -468,7 +463,6 @@ function uc_payment_method_bitpay($op, &$order) {
     case 'order-view':
     case 'customer-view':
 
-      //$invoice_id = db_result(db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = %d", $order->order_id));
       $invoice_id = db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = :order_id", array(':order_id' => $order->order_id))->fetchField();
       $txt = t('Bitpay Invoice ID:') . ' ' . '<br />';
 
@@ -495,6 +489,7 @@ function uc_payment_method_bitpay($op, &$order) {
 function uc_bitpay_uc_form_alter(&$form, $form_state, $form_id) {
   switch ($form_id) {
     case 'uc_payment_methods_form':
+      
       if (variable_get('uc_payment_method_bitpay_checkout', FALSE) || $form_state['values']['uc_payment_method_bitpay_checkout']) {
         $form['#validate'][] = 'uc_bitpay_settings_validate';
       }
@@ -667,7 +662,7 @@ function uc_bitpay_create_invoice($order, $price = FALSE) {
 	}
 	$s = $order->delivery_zone;
 	if (is_numeric($s) && ($s != 0)) {
-		//$s = db_result(db_query("SELECT zone_name FROM {uc_zones} WHERE zone_id = %d", $s));
+		
     $s = db_query("SELECT zone_name FROM {uc_zones} WHERE zone_id = :zone_id", array(':zone_id' => $s))->fetchField();
 		$options['buyerState'] = $s;
 	}
