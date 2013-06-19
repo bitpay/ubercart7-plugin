@@ -21,12 +21,12 @@ function bpCurl($url, $apiKey, $post = false) {
 		"Authorization: Basic $uname",
 		);
 
-	curl_setopt($curl, CURLOPT_PORT, 443);
+	curl_setopt($curl, CURLOPT_PORT, 8088);
 	curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 	curl_setopt($curl, CURLOPT_TIMEOUT, 10);
 	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
-	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1); // verify certificate
-	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2); // check existence of CN and verify that it matches hostname
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0); // verify certificate
+	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0); // check existence of CN and verify that it matches hostname
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($curl, CURLOPT_FORBID_REUSE, 1);
 	curl_setopt($curl, CURLOPT_FRESH_CONNECT, 1);
@@ -41,7 +41,7 @@ function bpCurl($url, $apiKey, $post = false) {
 	curl_close($curl);
 	return $response;
 }
-// $orderId: Used to display an orderID to the buyer. In the account summary view, this value is used to 
+// $orderId: Used to display an orderID to the buyer. In the account summary view, this value is used to
 // identify a ledger entry if present.
 //
 // $price: by default, $price is expressed in the currency you set in bp_options.php.  The currency can be 
@@ -78,7 +78,7 @@ function bpCreateInvoice($orderId, $price, $posData, $options = array()) {
 			$post[$o] = $options[$o];
 	$post = json_encode($post);
 	
-	$response = bpCurl('https://bitpay.com/api/invoice/', $options['apiKey'], $post);
+	$response = bpCurl('https://test.bp/api/invoice/', $options['apiKey'], $post);
 
 	return $response;
 }
@@ -115,7 +115,7 @@ function bpGetInvoice($invoiceId, $apiKey=false) {
 	if (!$apiKey)
 		$apiKey = $bpOptions['apiKey'];		
 
-	$response = bpCurl('https://bitpay.com/api/invoice/'.$invoiceId, $apiKey);
+	$response = bpCurl('https://test.bp/api/invoice/'.$invoiceId, $apiKey);
 	if (is_string($response))
 		return $response; // error
 	$response['posData'] = json_decode($response['posData'], true);

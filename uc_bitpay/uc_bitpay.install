@@ -16,7 +16,8 @@ function uc_bitpay_requirements($phase) {
 
   // BitPay's provided API code requires cURL.
   $has_curl = function_exists('curl_init');
-  
+  //initialize requirements
+  $requirements = array();
   if (variable_get('uc_payment_method_bitpay_checkout', TRUE)) { 
     $requirements['uc_bitpay_curl'] = array(
       'title' => $t('cURL'),
