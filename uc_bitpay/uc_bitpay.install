@@ -18,7 +18,7 @@ function uc_bitpay_requirements($phase) {
   $has_curl = function_exists('curl_init');
   //initialize requirements
   $requirements = array();
-  if (variable_get('uc_payment_method_bitpay_checkout', TRUE)) { 
+  if (variable_get('uc_payment_method_bitpay_checkout', FALSE)) { 
     $requirements['uc_bitpay_curl'] = array(
       'title' => $t('cURL'),
       'value' => $has_curl ? $t('Enabled') : $t('Not found'),
