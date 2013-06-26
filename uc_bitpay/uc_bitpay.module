@@ -309,9 +309,9 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
         else {
         // The invoice was paid and is in some in-payment or complete state.
         // If the status is already 'confirmed', it means they had high
-        // transaction speeds; set the order status to Bitpay paid.
+        // transaction speeds; set the order status to payment_received.
         if ($resp['status'] == 'confirmed') {
-          uc_order_update_status($arg1->order_id, 'bitpay_paid');
+          uc_order_update_status($arg1->order_id, 'payment_received');
         }
         else {
           // It's not confirmed yet; show the order status as Bitpay pending.
@@ -606,7 +606,7 @@ function uc_bitpay_create_invoice($order, $price = FALSE) {
 	if ($rurl != '') {
 		$options['redirectURL'] = $rurl;
 	}
-	$options['physical'] = (variable_get('uc_bitpay_physical', 1) == 1);
+	$options['physical'] = variable_get('uc_bitpay_physical', 1);
 					
   	// itemDesc
 	// NOTE: There is a 100-char limit on descriptions;

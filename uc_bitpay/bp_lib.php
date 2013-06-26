@@ -2,6 +2,24 @@
 
 require_once 'bp_options.php';
 
+//for easier changes in testing
+define('CURL_URL', 'https://bitpay.com/api/invoice/');
+define('PORT', 443);
+define('PEER_SETTING', 1);
+define('HOST_SETTING', 2);
+
+function bplog($contents)
+{
+	$file = 'bplog.txt';
+	file_put_contents($file, date('m-d H:i:s').": ", FILE_APPEND);
+	if (is_array($contents))
+		file_put_contents($file, var_export($contents, true)."\n", FILE_APPEND);		
+	else if (is_object($contents))
+		file_put_contents($file, json_encode($contents)."\n", FILE_APPEND);
+	else
+		file_put_contents($file, $contents."\n", FILE_APPEND);
+}
+
 function bpCurl($url, $apiKey, $post = false) {
 	global $bpOptions;	
 		
@@ -21,12 +39,12 @@ function bpCurl($url, $apiKey, $post = false) {
 		"Authorization: Basic $uname",
 		);
 
-	curl_setopt($curl, CURLOPT_PORT, 443);
+	curl_setopt($curl, CURLOPT_PORT, PORT);
 	curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 	curl_setopt($curl, CURLOPT_TIMEOUT, 10);
 	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
-	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1); // verify certificate
-	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2); // check existence of CN and verify that it matches hostname
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, PEER_SETTING); // verify certificate
+	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, HOST_SETTING); // check existence of CN and verify that it matches hostname
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($curl, CURLOPT_FORBID_REUSE, 1);
 	curl_setopt($curl, CURLOPT_FRESH_CONNECT, 1);
@@ -78,7 +96,7 @@ function bpCreateInvoice($orderId, $price, $posData, $options = array()) {
 			$post[$o] = $options[$o];
 	$post = json_encode($post);
 	
-	$response = bpCurl('https://bitpay.com/api/invoice/', $options['apiKey'], $post);
+	$response = bpCurl(CURL_URL, $options['apiKey'], $post);
 
 	return $response;
 }
@@ -115,7 +133,7 @@ function bpGetInvoice($invoiceId, $apiKey=false) {
 	if (!$apiKey)
 		$apiKey = $bpOptions['apiKey'];		
 
-	$response = bpCurl('https://bitpay.com/api/invoice/'.$invoiceId, $apiKey);
+	$response = bpCurl(CURL_URL.$invoiceId, $apiKey);
 	if (is_string($response))
 		return $response; // error
 	$response['posData'] = json_decode($response['posData'], true);

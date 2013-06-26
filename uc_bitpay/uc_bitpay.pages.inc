@@ -103,7 +103,7 @@ function uc_bitpay_notification() {
 	    // mark the order as payment received
 			$state = uc_order_status_data($order_status, 'state');
       if (($state != 'canceled') && ($state != 'completed')) {
-        uc_order_update_status($order_id, 'bitpay_paid');
+        uc_order_update_status($order_id, 'payment_received');
       }
 
       // mark the payment
@@ -141,10 +141,10 @@ function uc_bitpay_notification() {
 	  case 'complete':
 
   		// mark the order as payment received if it hasn't been already
-      if ($order_status != 'bitpay_paid') {
+      if ($order_status != 'payment_received') {
 			$state = uc_order_status_data($order_status, 'state');
       if (($state != 'canceled') && ($state != 'completed')) {
-        uc_order_update_status($order_id, 'bitpay_paid');
+        uc_order_update_status($order_id, 'payment_received');
       }
       // mark the payment
       uc_payment_enter($order_id, 'bitpay', $notify['price'], $uid, NULL, '', REQUEST_TIME);

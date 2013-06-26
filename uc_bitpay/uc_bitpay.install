@@ -105,23 +105,19 @@ function uc_bitpay_install() {
   
 	// add two new order statuses
   $t = get_t();
-  
-  $id = db_insert('uc_order_statuses')
-    ->fields(array(
+
+    //modeled after PayPal install
+    db_merge('uc_order_statuses')
+    ->key(array('order_status_id' => 'bitpay_pending'))
+    ->insertFields(array(
       'order_status_id' => 'bitpay_pending',
       'title' => $t('Bitpay - pending'),
-      'state' => 'post_checkout',
+      'state' => 'payment_received',
       'weight' => 7,
       'locked' => 1,
     ))
-    ->execute();
-  
-  $id = db_insert('uc_order_statuses')
-    ->fields(array(
-      'order_status_id' => 'bitpay_paid',
-      'title' => $t('Bitpay - paid'),
+    ->updateFields(array(
       'state' => 'payment_received',
-      'weight' => 7,
       'locked' => 1,
     ))
     ->execute();
@@ -143,9 +139,5 @@ function uc_bitpay_uninstall() {
 
   db_delete('uc_order_statuses')
     ->condition('order_status_id', 'bitpay_pending')
-    ->execute();
-
-  db_delete('uc_order_statuses')
-    ->condition('order_status_id', 'bitpay_paid')
     ->execute();
 }
