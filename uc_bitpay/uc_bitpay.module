@@ -14,7 +14,7 @@
 require_once("bp_lib.php");
 require_once("uc_bitpay.pages.inc");
 
-define ('BITPAY_WEBSITE', "https://bitpay.com");
+define ('BITPAY_WEBSITE', "https://test.bp:8088");
  
 define ('BITPAY_SMALL_LOGO_FILE', "/img/bitpay23.png");
  
@@ -253,7 +253,7 @@ function uc_bitpay_uc_payment_method() {
 function uc_bitpay_uc_order($op, $arg1, $arg2) {
 
   global $base_url;
-   
+  
   // check for order 'save' even if payment method isn't 'bitpay';  
   // they may have changed it from 'bitpay', so if they're saving,
   // and we find a bitcoin handling fee line item, we should remove it
@@ -293,11 +293,11 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
         return $fee;
 
       case 'submit':
-
+       
         // They're attempting to submit the order; check to make sure
         // they actually paid the Bitpay invoice first (the status of
         // the invoice should be something other than 'new' or 'expired'.)
-
+        watchdog("test", "submit (uc_bitpay.module)");
         $invoice_id = db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = :order_id", array(':order_id' => $arg1->order_id))->fetchField(); 
         $resp = bpGetInvoice($invoice_id, _get_bp_key());
         if (($resp['status'] == 'new') || ($resp['status'] == 'expired')) {
@@ -307,18 +307,20 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
           return array(array('pass' => FALSE, 'message' => $message));
         } 
         else {
-        // The invoice was paid and is in some in-payment or complete state.
-        // If the status is already 'confirmed', it means they had high
-        // transaction speeds; set the order status to payment_received.
-        if ($resp['status'] == 'confirmed') {
-          uc_order_update_status($arg1->order_id, 'payment_received');
+          // The invoice was paid and is in some in-payment or complete state.
+          // If the status is already 'confirmed', it means they had high
+          // transaction speeds; set the order status to Bitpay - pending.
+          if ($resp['status'] == 'confirmed') {
+            watchdog("test", "confirmed (in uc_bitpay.module)");
+            uc_order_update_status($arg1->order_id, 'bitpay_pendinga');
+          }
+          else {
+            watchdog("test", "not confirmed, pending (in uc_bitpay.module)");
+            // It's not confirmed yet; show the order status as Bitpay - pending.
+            uc_order_update_status($arg1->order_id, 'bitpay_pending');
+          }
+          return TRUE;
         }
-        else {
-          // It's not confirmed yet; show the order status as Bitpay pending.
-          uc_order_update_status($arg1->order_id, 'bitpay_pending');
-        }
-        return TRUE;
-      }
     } // end switch - check for order action taken
   } // end if - check to make sure payment method is 'bitpay', etc.
 

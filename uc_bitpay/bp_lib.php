@@ -3,10 +3,10 @@
 require_once 'bp_options.php';
 
 //for easier changes in testing
-define('CURL_URL', 'https://bitpay.com/api/invoice/');
-define('PORT', 443);
-define('PEER_SETTING', 1);
-define('HOST_SETTING', 2);
+define('CURL_URL', 'https://test.bp:8088/api/invoice/');
+define('PORT', 8088);
+define('PEER_SETTING', 0);
+define('HOST_SETTING', 0);
 
 function bplog($contents)
 {
@@ -50,7 +50,7 @@ function bpCurl($url, $apiKey, $post = false) {
 	curl_setopt($curl, CURLOPT_FRESH_CONNECT, 1);
 		
 	$responseString = curl_exec($curl);
-	
+	bplog($responseString);
 	if($responseString == false) {
 		$response = curl_error($curl);
 	} else {
@@ -77,7 +77,8 @@ function bpCurl($url, $apiKey, $post = false) {
 // (see api documentation for information on these options).
 function bpCreateInvoice($orderId, $price, $posData, $options = array()) {	
 	global $bpOptions;	
-	
+	watchdog("test", "create invoice");
+
 	$options = array_merge($bpOptions, $options);	// $options override any options found in bp_options.php
 	
 	$options['posData'] = '{"posData": "' . $posData . '"';
@@ -104,26 +105,36 @@ function bpCreateInvoice($orderId, $price, $posData, $options = array()) {
 // Call from your notification handler to convert $_POST data to an object containing invoice data
 function bpVerifyNotification($apiKey = false) {
 	global $bpOptions;
-	if (!$apiKey)
-		$apiKey = $bpOptions['apiKey'];		
+
+
+	if (!$apiKey) {
+		$apiKey = $bpOptions['apiKey'];
+	}	
 	
 	$post = file_get_contents("php://input");
-	if (!$post)
-		return 'No post data';
-		
-	$json = json_decode($post, true);
-	
-	if (is_string($json))
-		return $json; // error
 
-	if (!array_key_exists('posData', $json)) 
+	if (!$post) {
+		return 'No post data';
+	}
+		
+	$json = json_decode($post, true); 
+
+	if (is_string($json)) {
+		return $json; // error
+	}
+
+	if (!array_key_exists('posData', $json))  {
 		return 'no posData';
+	}
 		
 	$posData = json_decode($json['posData'], true);
-	if($bpOptions['verifyPos'] and $posData['hash'] != crypt($posData['posData'], $apiKey)) 
+
+	if($bpOptions['verifyPos'] and $posData['hash'] != crypt($posData['posData'], $apiKey)) {
 		return 'authentication failed (bad hash)';
+	}
+
 	$json['posData'] = $posData['posData'];
-		
+	
 	return $json;
 }
 
