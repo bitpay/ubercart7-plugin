@@ -3,10 +3,10 @@
 require_once 'bp_options.php';
 
 //for easier changes in testing
-define('CURL_URL', 'https://test.bp:8088/api/invoice/');
-define('PORT', 8088);
-define('PEER_SETTING', 0);
-define('HOST_SETTING', 0);
+define('CURL_URL', 'https://bitpay.com/api/invoice/');
+define('PORT', 443);
+define('PEER_SETTING', 1);
+define('HOST_SETTING', 2);
 
 function bplog($contents)
 {
@@ -77,7 +77,7 @@ function bpCurl($url, $apiKey, $post = false) {
 // (see api documentation for information on these options).
 function bpCreateInvoice($orderId, $price, $posData, $options = array()) {	
 	global $bpOptions;	
-	watchdog("test", "create invoice");
+	//watchdog("create invoice", "create invoice");
 
 	$options = array_merge($bpOptions, $options);	// $options override any options found in bp_options.php
 	

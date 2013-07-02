@@ -71,7 +71,7 @@ function uc_bitpay_notification() {
 	  // 'expired' or 'invalid' for any DB updates; it does
 	  // nothing significant if the invoice is merely 'paid'.
 	  case 'paid':
-   	      watchdog("paid", "paid (pages.inc)");
+   	      //watchdog("paid", "paid (pages.inc)");
 	      // just save a comment
 	      uc_order_comment_save($order_id, 0, t("Customer has sent the bitcoin transaction for payment, but it has not confirmed yet."), 'admin');
 
@@ -102,12 +102,12 @@ function uc_bitpay_notification() {
 	  // 'confirmed' after the invoice is 'paid' and the transaction
       // receives a full six confirmations on the blockchain.
 	  case 'confirmed':
-		  watchdog("confirmed", "confirmed (pages.inc)");
+		  //watchdog("confirmed", "confirmed (pages.inc)");
 		  
-		  // mark the order as Bitpay - pending
+		  // mark the order as Payment received
 		  $state = uc_order_status_data($order_status, 'state');
 	      if (($state != 'canceled') && ($state != 'completed')) {
-	        uc_order_update_status($order_id, 'bitpay_pending');
+	        uc_order_update_status($order_id, 'payment_received');
 	      }
 
 	      // mark the payment
@@ -143,8 +143,8 @@ function uc_bitpay_notification() {
 	  // discovering or resolving any issues resulting from 'high'-
 	  // speed invoices encountering a double-spend attack.
 	  case 'complete':
-		  watchdog("complete", "complete (pages.inc)");
-	  		// mark the order as payment received if it hasn't been already
+		  //watchdog("complete", "complete (pages.inc)");
+	  		// mark the order as Payment received if it hasn't been already
 	      if ($order_status != 'payment_received') {
 				$state = uc_order_status_data($order_status, 'state');
 	      if (($state != 'canceled') && ($state != 'completed')) {

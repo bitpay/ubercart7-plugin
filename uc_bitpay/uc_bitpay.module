@@ -14,7 +14,7 @@
 require_once("bp_lib.php");
 require_once("uc_bitpay.pages.inc");
 
-define ('BITPAY_WEBSITE', "https://test.bp:8088");
+define ('BITPAY_WEBSITE', "https://bitpay.com");
  
 define ('BITPAY_SMALL_LOGO_FILE', "/img/bitpay23.png");
  
@@ -273,6 +273,7 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
   if (($arg1->payment_method == 'bitpay') && (!variable_get('uc_bitpay_debug_mode', 0) || 
   user_access('access administration menu'))) {
 
+    //watchdog("op", $op);
     switch ($op) {
 
       case 'new':
@@ -297,7 +298,7 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
         // They're attempting to submit the order; check to make sure
         // they actually paid the Bitpay invoice first (the status of
         // the invoice should be something other than 'new' or 'expired'.)
-        watchdog("test", "submit (uc_bitpay.module)");
+        //watchdog("submit module", "submit module");
         $invoice_id = db_query("SELECT invoice_id FROM {uc_payment_bitpay} WHERE order_id = :order_id", array(':order_id' => $arg1->order_id))->fetchField(); 
         $resp = bpGetInvoice($invoice_id, _get_bp_key());
         if (($resp['status'] == 'new') || ($resp['status'] == 'expired')) {
@@ -311,11 +312,12 @@ function uc_bitpay_uc_order($op, $arg1, $arg2) {
           // If the status is already 'confirmed', it means they had high
           // transaction speeds; set the order status to Bitpay - pending.
           if ($resp['status'] == 'confirmed') {
-            watchdog("test", "confirmed (in uc_bitpay.module)");
-            uc_order_update_status($arg1->order_id, 'bitpay_pendinga');
+            //watchdog("confirmed module", "confirmed module");
+            uc_order_update_status($arg1->order_id, 'payment_received'); //will be set to payment received in uc_bitpay.pages.inc
+                                                                       //soon after
           }
           else {
-            watchdog("test", "not confirmed, pending (in uc_bitpay.module)");
+            //watchdog("not confirmed module", "not confirmed module");
             // It's not confirmed yet; show the order status as Bitpay - pending.
             uc_order_update_status($arg1->order_id, 'bitpay_pending');
           }
