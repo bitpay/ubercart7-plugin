@@ -50,11 +50,11 @@ function bpCurl($url, $apiKey, $post = false) {
 	curl_setopt($curl, CURLOPT_FRESH_CONNECT, 1);
 		
 	$responseString = curl_exec($curl);
-	bplog($responseString);
 	if($responseString == false) {
 		$response = curl_error($curl);
 	} else {
 		$response = json_decode($responseString, true);
+
 	}
 	curl_close($curl);
 	return $response;

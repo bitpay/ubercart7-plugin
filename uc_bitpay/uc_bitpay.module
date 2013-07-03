@@ -65,7 +65,7 @@ function uc_bitpay_settings_form() {
     '#title' => t('Notification email address'),
     '#default_value' => variable_get('uc_bitpay_notify_email', ''),
     '#description' =>
-      t('Email address to receive Bitpay invoice notifications. Primarily for debugging or to be informed of any bitcoin payments.'),
+      t('Email address to receive Bitpay invoice notifications. Primarily for debugging or to be informed of any bitcoin payments. Please use all lowercase when entering the email address.'),
     );
   $form['admin']['uc_bitpay_notify_email_active'] = array(
     '#type' => 'checkbox',
@@ -695,7 +695,8 @@ function uc_bitpay_create_invoice($order, $price = FALSE) {
 
 	// now create the invoice
 	$resp = bpCreateInvoice($order_id, $price, $pos_data, $options);
-  
+  watchdog("resp in uc_bitpay_create_invoice", '<pre>' . print_r($resp, true) . '</pre>'); 
+
 	return $resp;
 }
 
