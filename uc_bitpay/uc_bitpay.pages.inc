@@ -37,12 +37,9 @@ function uc_bitpay_notification() {
 
   	// if it's due to a bad API key, alert the notification email address
 		if (substr($notify, 0, strlen($checkerr)) == $checkerr) {
-			  // first construct the alert to email
-	      $email_text = t("Your website has just received a Bitpay invoice status notification with what appears to be an invalid API key. You will want to have your web developer investigate this situation if you are unsure of the reason behind it (such as recently changed API keys.)");
-	      $email_text = wordwrap($email_text, 65, "\r\n");
-			  $email_text .= "\r\n";
 	  	  // send the email
-	      $success = uc_bitpay_mail($email_text, 1); // priority 1 (high)
+		  $to = variable_get('uc_bitpay_alert_email', '');
+	      $success = drupal_mail('uc_bitpay', 'invalid_api_key', $to, $language);
         }
 
 		return;
@@ -71,22 +68,19 @@ function uc_bitpay_notification() {
 	  // 'expired' or 'invalid' for any DB updates; it does
 	  // nothing significant if the invoice is merely 'paid'.
 	  case 'paid':
-   	      //watchdog("paid", "paid (pages.inc)");
 	      // just save a comment
 	      uc_order_comment_save($order_id, 0, t("Customer has sent the bitcoin transaction for payment, but it has not confirmed yet."), 'admin');
 
 		  // if we're copying notification emails, here's where we do one
 		  if (variable_get('uc_bitpay_copy_notify_emails', FALSE)) {
 		  // construct an alert to email
-	          $email_text = "Bitpay " .
-			  t("has just updated an invoice status as: 'paid'. This indicates that full payment has been made on the invoice, but the bitcoin transaction has not yet been confirmed.");
-	       	  $email_text = wordwrap($email_text, 65, "\r\n");
-			  $email_text .= "\r\n\r\n" .
-		  	  t("Invoice") . " ID: " . $notify['id'] . "\r\n" .
-			  t("Invoice") . " URL: " . $notify['url'] . "\r\n" .
-			  t("Order")   . " ID: " . $order_id . "\r\n";
+		  	  $params = array();
+		  	  $params['id'] = $notify['id'];
+		  	  $params['url'] = $notify['url'];
+		  	  $params['order_id'] = $order_id;
 	  	      // send the email
-	          $success = uc_bitpay_mail($email_text, 3); // priority of 3 (normal)
+	          $to = variable_get('uc_bitpay_alert_email', '');
+	          $success = drupal_mail('uc_bitpay', 'paid', $to, $language, $params);
      	   }
 
 	       break;
@@ -101,9 +95,7 @@ function uc_bitpay_notification() {
 	  // confirmation on the bitcoin blockchain; 'low' will yield
 	  // 'confirmed' after the invoice is 'paid' and the transaction
       // receives a full six confirmations on the blockchain.
-	  case 'confirmed':
-		  //watchdog("confirmed", "confirmed (pages.inc)");
-		  
+	  case 'confirmed':		  
 		  // mark the order as Payment received
 		  $state = uc_order_status_data($order_status, 'state');
 	      if (($state != 'canceled') && ($state != 'completed')) {
@@ -119,15 +111,13 @@ function uc_bitpay_notification() {
 			  // if we're copying notification emails, here's where we do one
 		  if (variable_get('uc_bitpay_copy_notify_emails', FALSE)) {
 			    // construct an alert to email
-		        $email_text = "Bitpay " .
-				    t("has just updated an invoice status as: 'confirmed'. This indicates that the payment has been confirmed according to your Bitpay settings, and fulfillment of the order should occur.");
-		        $email_text = wordwrap($email_text, 65, "\r\n");
-				    $email_text .= "\r\n\r\n" .
-			  	  t("Invoice") . " ID: " . $notify['id'] . "\r\n" .
-				    t("Invoice") . " URL: " . $notify['url'] . "\r\n" .
-					  t("Order")   . " ID: " . $order_id . "\r\n";
+		  		$params = array();
+		  		$params['id'] = $notify['id'];
+		  		$params['url'] = $notify['url'];
+		  		$params['order_id'] = $order_id;
 		  	    // send the email
-		        $success = uc_bitpay_mail($email_text, 3); // priority of 3 (normal)
+		        $to = variable_get('uc_bitpay_alert_email', '');
+	            $success = drupal_mail('uc_bitpay', 'confirmed', $to, $language, $params);
 	      }
 
 		  break;
@@ -143,8 +133,7 @@ function uc_bitpay_notification() {
 	  // discovering or resolving any issues resulting from 'high'-
 	  // speed invoices encountering a double-spend attack.
 	  case 'complete':
-		  //watchdog("complete", "complete (pages.inc)");
-	  		// mark the order as Payment received if it hasn't been already
+	  	  // mark the order as Payment received if it hasn't been already
 	      if ($order_status != 'payment_received') {
 				$state = uc_order_status_data($order_status, 'state');
 	      if (($state != 'canceled') && ($state != 'completed')) {
@@ -156,15 +145,13 @@ function uc_bitpay_notification() {
 		  // if we're copying notification emails, here's where we do one
 		  if (variable_get('uc_bitpay_copy_notify_emails', FALSE)) {
 		 	 // construct an alert to email
-	         $email_text = "Bitpay " .
-			 t("has just updated an invoice status as: 'complete'. This indicates that the sale has been fully confirmed on the bitcoin network and your Bitpay merchant account has been credited.");
-	         $email_text = wordwrap($email_text, 65, "\r\n");
-			 $email_text .= "\r\n\r\n" .
-		  	 t("Invoice") . " ID: " . $notify['id'] . "\r\n" .
-			 t("Invoice") . " URL: " . $notify['url'] . "\r\n" .
-		     t("Order")   . " ID: " . $order_id . "\r\n";
+		  	 $params = array();
+		  	 $params['id'] = $notify['id'];
+		  	 $params['url'] = $notify['url']; 
+		  	 $params['order_id'] = $order_id;
 	  	     // send the email
-	         $success = uc_bitpay_mail($email_text, 3); // priority of 3 (normal)
+	         $to = variable_get('uc_bitpay_alert_email', '');
+	         $success = drupal_mail('uc_bitpay', 'complete', $to, $language, $params);
 	      }
 
 		  break;
@@ -195,16 +182,14 @@ function uc_bitpay_notification() {
 	  case 'invalid':
 	
 		  // construct an alert to email
-	      $email_text = "Bitpay " .
-			    t("has just updated an invoice status as: '") . $notify['status'] .
-				  t("'. Your payments department should be informed of this status update; Bitpay may need to be contacted to confirm that the merchant account is credited after the payment eventually confirms on the bitcoin network.");
-	      $email_text = wordwrap($email_text, 65, "\r\n");
-			  $email_text .= "\r\n\r\n" .
-		  	  t("Invoice") . " ID: " . $notify['id'] . "\r\n" .
-			    t("Invoice") . " URL: " . $notify['url'] . "\r\n" .
-				  t("Order")   . " ID: " . $order_id . "\r\n";
+	  	  $params = array();
+		  $params['id'] = $notify['id'];
+		  $params['url'] = $notify['url']; 
+		  $params['order_id'] = $order_id;
+		  $params['status'] = $notify['status'];
 	  	  // send the email
-	      $success = uc_bitpay_mail($email_text, 3); // priority of 3 (normal)
+	      $to = variable_get('uc_bitpay_alert_email', '');
+	      $success = drupal_mail('uc_bitpay', 'invalid', $to, $language, $params);
 				
 	      uc_order_comment_save($order_id, 0, t("The Bitpay invoice for this order has been marked INVALID. You may neet to contact Bitpay to resolve the issue."), 'admin');
 
@@ -225,16 +210,14 @@ function uc_bitpay_notification() {
 	  default:
 			
 		  // construct an alert to email
-	      $email_text = "Bitpay " .
-			    t("has just sent an invoice status notification with an unusal status of: '") .
-			    $notify['status'] . t("' to your website. Your website developer should be informed of this status update to ascertain what further action, if any, needs to be taken.");
-	      $email_text = wordwrap($email_text, 65, "\r\n");
-			  $email_text .= "\r\n\r\n" .
-		  	  t("Invoice") . " ID: " . $notify['id'] . "\r\n" .
-			    t("Invoice") . " URL: " . $notify['url'] . "\r\n" .
-				  t("Order")   . " ID: " . $order_id . "\r\n";
+	  	  $params = array();
+		  $params['id'] = $notify['id'];
+		  $params['url'] = $notify['url']; 
+		  $params['order_id'] = $order_id;
+		  $params['status'] = $notify['status'];
 	      // send the email
-	      $success = uc_bitpay_mail($email_text, 1); // priority of 1 (high)
+	      $to = variable_get('uc_bitpay_alert_email', '');
+	      $success = drupal_mail('uc_bitpay', 'default', $to, $language);
 			
   } // end switch - examining the invoice status
 
@@ -244,38 +227,70 @@ function uc_bitpay_notification() {
 /**
  * Sends out an email alert from the Bitpay module
  */
-function uc_bitpay_mail($txt, $priority = 3) {
+function uc_bitpay_mail($key, &$message, $params) {
 
-	$success = false;
-	
-  $to = variable_get('uc_bitpay_alert_email', '');
-	
-	if ($to != '') {
-	  // prepare to construct the message array we need
-		$m = array();
-    // include the preface to the body of the email
-  	$preface = t("ATTENTION: This is an alert from the Bitpay module of your website.") . "\r\n\r\n";
-    // establish the body of the email
-		$m['body'] = $preface . $txt;
-    // get the 'From' address
-		$from = _get_bp_email_from_address();
-	  // setup the other email elements
-		$m['id'] = 'uc_bitpay_alert';
-		$m['subject'] = t('Bitpay Invoice Status Update Notification');
-		$m['to'] = $to;
-		$m['from'] = $from;
-		// finalize the email headers
-		$headers = array();
-		$headers['To'] = $to;
-		$headers['From'] = $from;
-		$headers['Sender'] = $from;
-		$headers['X-Priority'] = $priority;
-		$m['headers'] = $headers;
-  	// actually send the email
-    $success = drupal_send_mail($m);
+  // The key allows for a module to define multiple mails.
+  switch($key) {
+  	case 'invalid_api_key':
+  		$message['subject'] = t("Invalid API Key");
+  		$message['body'][] = t("Your website has just received a Bitpay invoice status notification with what appears to be an invalid API key. You will want to have your web developer investigate this situation if you are unsure of the reason behind it (such as recently changed API keys.)");
+	    //$message['body'][] = wordwrap($email_text, 65, "\r\n");
+		$message['body'][] = "\r\n";
+  		break;
+  	case 'paid':
+  		$message['subject'] = t("Invoice Paid");
+  		$message['body'][] = "Bitpay " .
+			t("has just updated an invoice status as: 'paid'. This indicates that full payment has been made on the invoice, but the bitcoin transaction has not yet been confirmed.");
+	    //$message['body'][] = wordwrap($email_text, 65, "\r\n");
+		$message['body'][] = "\r\n\r\n" .
+		  	t("Invoice") . " ID: " . $params['id'] . "\r\n" .
+			t("Invoice") . " URL: " . $params['url'] . "\r\n" .
+			t("Order")   . " ID: " . $params['order_id'] . "\r\n";
+  		break;
+  	case 'confirmed':
+  		$message['subject'] = t("Invoice Confirmed");
+  		$message['body'][] = "Bitpay " .
+			t("has just updated an invoice status as: 'confirmed'. This indicates that the payment has been confirmed according to your Bitpay settings, and fulfillment of the order should occur.");
+		//$message['body'][] = wordwrap($email_text, 65, "\r\n");
+		$message['body'][] = "\r\n\r\n" .
+			t("Invoice") . " ID: " . $params['id'] . "\r\n" .
+			t("Invoice") . " URL: " . $params['url'] . "\r\n" .
+			t("Order")   . " ID: " . $params['order_id'] . "\r\n";
+  		break;
+  	case 'complete':
+  		$message['subject'] = t("Invoice Complete");
+  		$message['body'][] = "Bitpay " .
+			t("has just updated an invoice status as: 'complete'. This indicates that the sale has been fully confirmed on the bitcoin network and your Bitpay merchant account has been credited.");
+	    //$message['body'][] = wordwrap($email_text, 65, "\r\n");
+	    $message['body'][] = "\r\n\r\n" .
+		  	t("Invoice") . " ID: " . $params['id'] . "\r\n" .
+			t("Invoice") . " URL: " . $params['url'] . "\r\n" .
+		    t("Order")   . " ID: " . $params['order_id'] . "\r\n";
+  		break;
+  	case 'invalid':
+  	 	$message['subject'] = t("Invalid Invoice");
+  		$message['body'][] = "Bitpay " .
+			t("has just updated an invoice status as: '") . $params['status'] .
+		    t("'. Your payments department should be informed of this status update; Bitpay may need to be contacted to confirm that the merchant account is credited after the payment eventually confirms on the bitcoin network.");
+	    //$message['body'][] = wordwrap($email_text, 65, "\r\n");
+		$message['body'][] = "\r\n\r\n" .
+		  	t("Invoice") . " ID: " . $params['id'] . "\r\n" .
+			t("Invoice") . " URL: " . $params['url'] . "\r\n" .
+		    t("Order")   . " ID: " . $params['order_id'] . "\r\n";
+  		break;
+  	case 'default':
+  		$message['subject'] = t("Unusual Invoice Status");
+  		$message['body'][] = "Bitpay " .
+			t("has just sent an invoice status notification with an unusal status of: '") .
+			$params['status'] . t("' to your website. Your website developer should be informed of this status update to ascertain what further action, if any, needs to be taken.");
+	    //$message['body'][] = wordwrap($email_text, 65, "\r\n");
+		$message['body'][] = "\r\n\r\n" .
+		  	t("Invoice") . " ID: " . $notify['id'] . "\r\n" .
+			t("Invoice") . " URL: " . $notify['url'] . "\r\n" .
+		    t("Order")   . " ID: " . $order_id . "\r\n";
+  		break;
   }
 	
-	return $success;
 }
 
 

@@ -52,6 +52,7 @@ function bpCurl($url, $apiKey, $post = false) {
 	$responseString = curl_exec($curl);
 	if($responseString == false) {
 		$response = curl_error($curl);
+		watchdog("uc_bitpay", $response . " - " . "curl error");
 	} else {
 		$response = json_decode($responseString, true);
 
@@ -77,7 +78,6 @@ function bpCurl($url, $apiKey, $post = false) {
 // (see api documentation for information on these options).
 function bpCreateInvoice($orderId, $price, $posData, $options = array()) {	
 	global $bpOptions;	
-	//watchdog("create invoice", "create invoice");
 
 	$options = array_merge($bpOptions, $options);	// $options override any options found in bp_options.php
 	
