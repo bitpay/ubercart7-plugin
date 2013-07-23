@@ -39,7 +39,7 @@ function uc_bitpay_notification() {
 		if (substr($notify, 0, strlen($checkerr)) == $checkerr) {
 	  	  // send the email
 		  $to = variable_get('uc_bitpay_alert_email', '');
-	      $success = drupal_mail('uc_bitpay', 'invalid_api_key', $to, $language);
+	      $success = drupal_mail('uc_bitpay', 'invalid_api_key', $to, $language, array(), "BitPay");
         }
 
 		return;
@@ -80,7 +80,7 @@ function uc_bitpay_notification() {
 		  	  $params['order_id'] = $order_id;
 	  	      // send the email
 	          $to = variable_get('uc_bitpay_alert_email', '');
-	          $success = drupal_mail('uc_bitpay', 'paid', $to, $language, $params);
+	          $success = drupal_mail('uc_bitpay', 'paid', $to, $language, $params, "BitPay");
      	   }
 
 	       break;
@@ -117,7 +117,7 @@ function uc_bitpay_notification() {
 		  		$params['order_id'] = $order_id;
 		  	    // send the email
 		        $to = variable_get('uc_bitpay_alert_email', '');
-	            $success = drupal_mail('uc_bitpay', 'confirmed', $to, $language, $params);
+	            $success = drupal_mail('uc_bitpay', 'confirmed', $to, $language, $params, "BitPay");
 	      }
 
 		  break;
@@ -151,7 +151,7 @@ function uc_bitpay_notification() {
 		  	 $params['order_id'] = $order_id;
 	  	     // send the email
 	         $to = variable_get('uc_bitpay_alert_email', '');
-	         $success = drupal_mail('uc_bitpay', 'complete', $to, $language, $params);
+	         $success = drupal_mail('uc_bitpay', 'complete', $to, $language, $params, "BitPay");
 	      }
 
 		  break;
@@ -189,7 +189,7 @@ function uc_bitpay_notification() {
 		  $params['status'] = $notify['status'];
 	  	  // send the email
 	      $to = variable_get('uc_bitpay_alert_email', '');
-	      $success = drupal_mail('uc_bitpay', 'invalid', $to, $language, $params);
+	      $success = drupal_mail('uc_bitpay', 'invalid', $to, $language, $params, "BitPay");
 				
 	      uc_order_comment_save($order_id, 0, t("The Bitpay invoice for this order has been marked INVALID. You may neet to contact Bitpay to resolve the issue."), 'admin');
 
@@ -217,7 +217,7 @@ function uc_bitpay_notification() {
 		  $params['status'] = $notify['status'];
 	      // send the email
 	      $to = variable_get('uc_bitpay_alert_email', '');
-	      $success = drupal_mail('uc_bitpay', 'default', $to, $language);
+	      $success = drupal_mail('uc_bitpay', 'default', $to, $language, $params, "BitPay");
 			
   } // end switch - examining the invoice status
 
@@ -226,6 +226,7 @@ function uc_bitpay_notification() {
 
 /**
  * Sends out an email alert from the Bitpay module
+ * Implements hook_mail()
  */
 function uc_bitpay_mail($key, &$message, $params) {
 
