@@ -855,43 +855,13 @@ function uc_bitpay_get_handling_fee($arg, $subtotal = FALSE) {
  */
 function _uc_bitpay_currency_array() {
 
-	$currencies = array(
-		'BTC' => '(BTC) ' . t('Bitcoin'),
-		'USD' => '(USD) ' . t('US Dollar'),
-		'EUR' => '(EUR) ' . t('Eurozone Euro'),
-		'GBP' => '(GBP) ' . t('British Pound'),
-		'AUD' => '(AUD) ' . t('Australian Dollar'),
-		'BGN' => '(BGN) ' . t('Bulgarian Lev'),
-		'BRL' => '(BRL) ' . t('Brasilian Real'),
-		'CAD' => '(CAD) ' . t('Canadian Dollar'),
-		'CHF' => '(CHF) ' . t('Swiss Franc'),
-		'CNY' => '(CNY) ' . t('Chinese Yuan'),
-		'CZK' => '(CZK) ' . t('Czech Koruna'),
-		'DKK' => '(DKK) ' . t('Danish Krone'),
-		'HKD' => '(HKD) ' . t('Hong Kong Dollar'),
-		'HRK' => '(HRK) ' . t('Croatian Kuna'),
-		'HUF' => '(HUF) ' . t('Hungarian Forint'),
-		'IDR' => '(IDR) ' . t('Indonesian Rupiah'),
-		'ILS' => '(ILS) ' . t('Isreali Shekel'),
-		'INR' => '(INR) ' . t('Indian Rupee'),
-		'JPY' => '(JPY) ' . t('Japanese Yen'),
-		'KRW' => '(KRW) ' . t('South Korean Won'),
-		'LTL' => '(LTL) ' . t('Lithuanian Litas'),
-		'LVL' => '(LVL) ' . t('Latvian Lats'),
-		'MXN' => '(MXN) ' . t('Mexican Peso'),
-		'MYR' => '(MYR) ' . t('Malaysian Ringgit'),
-		'NOK' => '(NOR) ' . t('Norwegian Krone'),
-		'NZD' => '(NZD) ' . t('New Zealand Dollar'),
-		'PHP' => '(PHP) ' . t('Philippine Peso'),
-		'PLN' => '(PLN) ' . t('Polish Zloty'),
-		'RON' => '(RON) ' . t('New Romanian Leu'),
-		'RUB' => '(RUB) ' . t('Russian Rouble'),
-		'SEK' => '(SEK) ' . t('Swedish Krona'),
-		'SGD' => '(SGD) ' . t('Singapore Dollar'),
-		'THB' => '(THB) ' . t('Thai Baht'),
-		'TRY' => '(TRY) ' . t('Turkish Lira'),
-		'ZAR' => '(ZAR) ' . t('South African Rand')
-	);
+	$currencies = array();
+	$rate_url = 'https://bitpay.com/api/rates';
 	
+	$clist = json_decode(file_get_contents($rate_url),true);
+
+	foreach($clist as $key => $value)
+		$currencies[$value['code']] = '(' . $value['code'] . ') ' . t($value['name']);
+
 	return $currencies;
 }
