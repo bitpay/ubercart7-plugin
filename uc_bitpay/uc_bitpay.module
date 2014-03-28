@@ -384,6 +384,7 @@ function uc_payment_method_bitpay($op, &$order) {
           // check to see if the invoice is expired,
           // or price or currency have changed
           $text_total = uc_order_get_total($order);
+          $text_total = _uc_bitpay_round_price($text_total);
           $text_total .= '';
           if (($resp['status'] == 'expired') ||
           ($resp['price'] != $text_total) ||
@@ -574,13 +575,9 @@ function uc_bitpay_create_invoice($order, $price = FALSE) {
 	// Calculate the price if necessary
 	if ($price === FALSE) {
  		$price = uc_order_get_total($order);
-		// Seems like taxes don't round themselves,
-		// so let's do the precision by hand again
-		$prec = variable_get('uc_currency_prec', 2);
-		$factor = pow(10, $prec);
-		$large_price = $price * $factor;
-		$price = floor($large_price + 0.5) / $factor; // round up
 	}
+
+  $price = _uc_bitpay_round_price($price);
 
 	// Array the rest of the order data we need to send.
   // Start with notificationURL, notificationEmail
@@ -839,12 +836,7 @@ function uc_bitpay_get_handling_fee($arg, $subtotal = FALSE) {
 			$markup = $amt;
 	}
 
-	// I don't see any way to get the precision
-	// right without doing it by hand, so...
-	$prec = variable_get('uc_currency_prec', 2);
-	$factor = pow(10, $prec);
-	$large_markup = $markup * $factor;
-	$markup = floor($large_markup + 0.5) / $factor; // round up
+  $markup = _uc_bitpay_round_price($markup);
 
 	return $markup;
 }
@@ -864,4 +856,8 @@ function _uc_bitpay_currency_array() {
 		$currencies[$value['code']] = '(' . $value['code'] . ') ' . t($value['name']);
 
 	return $currencies;
+}
+
+function _uc_bitpay_round_price($price) {
+  return number_format($price, variable_get('uc_currency_prec', 2), '.', '');
 }
