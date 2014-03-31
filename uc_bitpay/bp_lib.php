@@ -8,8 +8,7 @@ define('PORT', 443);
 define('PEER_SETTING', 1);
 define('HOST_SETTING', 2);
 
-function bplog($contents)
-{
+function bplog($contents) {
 	$file = 'bplog.txt';
 	file_put_contents($file, date('m-d H:i:s').": ", FILE_APPEND);
 	if (is_array($contents))
@@ -37,6 +36,7 @@ function bpCurl($url, $apiKey, $post = false) {
 		'Content-Type: application/json',
 		"Content-Length: $length",
 		"Authorization: Basic $uname",
+		'X-BitPay-Plugin-Info: ubercart7',
 		);
 
 	curl_setopt($curl, CURLOPT_PORT, PORT);
