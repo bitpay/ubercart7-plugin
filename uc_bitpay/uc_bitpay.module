@@ -411,7 +411,7 @@ function uc_payment_method_bitpay($op, &$order) {
         $resp = uc_bitpay_create_invoice($order);
         
         // basic acid test to verify it didn't obviously fail
-        if (is_array($resp)) {
+        if (is_array($resp) && isset($resp['id'])) {
           // if successful, save the invoice data locally
           if (variable_get('uc_bitpay_notify_email_active', FALSE)) {
             $notify_email = variable_get('uc_bitpay_notify_email', '');
