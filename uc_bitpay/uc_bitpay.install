@@ -30,84 +30,92 @@
  * Installation file for the Bitpay payment module for Ubercart
  */
 
-
 /**
  * Implementation of hook_requirements().
+ *
+ * @param $phase
+ *
+ * @return array
  */
-function uc_bitpay_requirements($phase) {
-  $t = get_t();
+function uc_bitpay_requirements($phase)
+{
+    $t = get_t();
 
-  // BitPay's provided API code requires cURL.
-  $has_curl = function_exists('curl_init');
-  //initialize requirements
-  $requirements = array();
-  if (variable_get('uc_payment_method_bitpay_checkout', FALSE)) { 
-    $requirements['uc_bitpay_curl'] = array(
-      'title' => $t('cURL'),
-      'value' => $has_curl ? $t('Enabled') : $t('Not found'),
-    );
-    if (!$has_curl) {
-      $requirements['uc_bitpay_curl']['severity'] = REQUIREMENT_ERROR;
-      $requirements['uc_bitpay_curl']['description'] = $t("Bitpay requires the PHP <a href='!curl_url'>cURL</a> library.", array('!curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+    // BitPay's provided API code requires cURL.
+    $has_curl = function_exists('curl_init');
+    //initialize requirements
+    $requirements = array();
+    if (variable_get('uc_payment_method_bitpay_checkout', FALSE))
+    { 
+        $requirements['uc_bitpay_curl'] = array(
+            'title' => $t('cURL'),
+            'value' => $has_curl ? $t('Enabled') : $t('Not found'),
+        );
+        if (!$has_curl)
+        {
+            $requirements['uc_bitpay_curl']['severity'] = REQUIREMENT_ERROR;
+            $requirements['uc_bitpay_curl']['description'] = $t("Bitpay requires the PHP <a href='!curl_url'>cURL</a> library.", array('!curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+        }
     }
-  }
 
-  return $requirements;
+    return $requirements;
 }
-
 
 /**
  * Implementation of hook_schema().
+ *
+ * @return array
  */
-function uc_bitpay_schema() {
-  $schema = array();
+function uc_bitpay_schema()
+{
+    $schema = array();
 
-  $schema['uc_payment_bitpay'] = array(
-    'description' => 'Stores Bitpay payment information.',
-    'fields' => array(
-      'invoice_id' => array(
-        'description' => 'Primary key: the Bitpay invoice ID.',
-        'type' => 'varchar',
-        'length' => 127,
-        'not null' => TRUE,
-      ),
-      'order_id' => array(
-        'description' => 'The {uc_orders}.order_id.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'notify_email' => array(
-        'description' => 'The e-mail address to send status changes.',
-        'type' => 'varchar',
-        'length' => 255,
-        'default' => '',
-      ),
-			'physical' => array(
-			  'description' => 'Whether any physical good was purchased.',
-				'type' => 'int',
-				'unsigned' => TRUE,
-				'default' => 1,
-			),
-			'txn_speed' => array(
-			  'description' => "The invoice's transaction acceptance speed.",
-				'type' => 'varchar',
-				'length' => 15,
-				'not null' => TRUE,
-				'default' => 'low',
-			),
-			// NOTE: We're not storing Notification Level (confirm only/full),
-			// Physical Good Indicator, Redirect URL, or Item Description,
-			// all of which should be considered, but not necessarily used.
-			// The buyer-specific data (Name, Address, etc.) won't be considered.
-    ),
-    'indexes' => array(
-      'order_id' => array('order_id'),
-    ),
-    'primary key' => array('invoice_id')
-  );
+    $schema['uc_payment_bitpay'] = array(
+        'description' => 'Stores Bitpay payment information.',
+        'fields' => array(
+            'invoice_id' => array(
+                'description' => 'Primary key: the Bitpay invoice ID.',
+                'type'        => 'varchar',
+                'length'      => 127,
+                'not null'    => TRUE,
+            ),
+            'order_id' => array(
+                'description' => 'The {uc_orders}.order_id.',
+                'type'        => 'int',
+                'unsigned'    => TRUE,
+                'not null'    => TRUE,
+            ),
+            'notify_email' => array(
+                'description' => 'The e-mail address to send status changes.',
+                'type'        => 'varchar',
+                'length'      => 255,
+                'default'     => '',
+            ),
+            'physical' => array(
+                'description' => 'Whether any physical good was purchased.',
+                'type'        => 'int',
+                'unsigned'    => TRUE,
+                'default'     => 1,
+            ),
+            'txn_speed' => array(
+                'description' => "The invoice's transaction acceptance speed.",
+                'type'        => 'varchar',
+                'length'      => 15,
+                'not null'    => TRUE,
+                'default'     => 'low',
+            ),
+            // NOTE: We're not storing Notification Level (confirm only/full),
+            // Physical Good Indicator, Redirect URL, or Item Description,
+            // all of which should be considered, but not necessarily used.
+            // The buyer-specific data (Name, Address, etc.) won't be considered.
+        ),
+        'indexes' => array(
+            'order_id' => array('order_id'),
+        ),
+        'primary key' => array('invoice_id')
+    );
 
-  return $schema;
+    return $schema;
 }
 
 /**
@@ -116,34 +124,35 @@ function uc_bitpay_schema() {
  * Installs the Bitpay module; particularly, installs the database
  * schema and alters orders statuses to include 'Bitpay pending'.
  */
-function uc_bitpay_install() {
-  // Set the module weight so it can override other modules.
- 
-  db_update('system')
-    ->fields(array(
-      'weight' => 99,
-    ))
-    ->condition('name', 'bitpay')
-    ->execute();
-  
-	// add two new order statuses
-  $t = get_t();
+function uc_bitpay_install()
+{
+    // Set the module weight so it can override other modules.
+
+    db_update('system')
+        ->fields(array(
+            'weight' => 99,
+        ))
+        ->condition('name', 'bitpay')
+        ->execute();
+
+    // add two new order statuses
+    $t = get_t();
 
     //modeled after PayPal install
     db_merge('uc_order_statuses')
-    ->key(array('order_status_id' => 'bitpay_pending'))
-    ->insertFields(array(
-      'order_status_id' => 'bitpay_pending',
-      'title' => $t('Bitpay - pending'),
-      'state' => 'payment_received',
-      'weight' => 7,
-      'locked' => 1,
-    ))
-    ->updateFields(array(
-      'state' => 'payment_received',
-      'locked' => 1,
-    ))
-    ->execute();
+        ->key(array('order_status_id' => 'bitpay_pending'))
+        ->insertFields(array(
+            'order_status_id' => 'bitpay_pending',
+            'title'           => $t('Bitpay - pending'),
+            'state'           => 'payment_received',
+            'weight'          => 7,
+            'locked'          => 1,
+        ))
+        ->updateFields(array(
+            'state'  => 'payment_received',
+            'locked' => 1,
+        ))
+        ->execute();
 }
 
 
@@ -152,15 +161,15 @@ function uc_bitpay_install() {
  *
  * Uninstalls the Bitpay module.
  */
-function uc_bitpay_uninstall() {
-  
-	// Remove relevant data from the DB
-  
-  db_delete('variable')
-    ->condition('name', 'uc_bitpay_%%', 'LIKE')
-    ->execute(); 
+function uc_bitpay_uninstall()
+{
+    // Remove relevant data from the DB
 
-  db_delete('uc_order_statuses')
-    ->condition('order_status_id', 'bitpay_pending')
-    ->execute();
+    db_delete('variable')
+        ->condition('name', 'uc_bitpay_%%', 'LIKE')
+        ->execute(); 
+
+    db_delete('uc_order_statuses')
+        ->condition('order_status_id', 'bitpay_pending')
+        ->execute();
 }
