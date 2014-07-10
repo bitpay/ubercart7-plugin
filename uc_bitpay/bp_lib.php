@@ -68,7 +68,6 @@ function bpCurl($url, $apiKey, $post = false) {
 	$responseString = curl_exec($curl);
 	if($responseString == false) {
 		$response = curl_error($curl);
-		watchdog("uc_bitpay", $response . " - " . "curl error");
 	} else {
 		$response = json_decode($responseString, true);
 

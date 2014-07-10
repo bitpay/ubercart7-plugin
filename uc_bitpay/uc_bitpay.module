@@ -478,7 +478,8 @@ function uc_payment_method_bitpay($op, &$order) {
       }
       else {
         $review[] = '<b>Error creating Bitpay invoice</b>';
-        watchdog('uc_bitpay', 'Bitpay invoice could not be found and/or created!', array(), WATCHDOG_ERROR);
+        watchdog('uc_bitpay', 'Error creating Bitpay invoice: ' . $resp['error']['message'], array(), WATCHDOG_ERROR);
+	bplog("Error creating Bitpay invoice: " . var_export($resp, true));
       }
 
       return $review;
