@@ -28,7 +28,6 @@ global $bpOptions;
 // Please look carefully through these options and adjust according to your installation.  
 // Alternatively, most of these options can be dynamically set upon calling the functions in bp_lib.
 
-
 // REQUIRED Api key you created at bitpay.com
 // example: $bpOptions['apiKey'] = 'L21K5IIUG3IN2J3';
 $bpOptions['apiKey'] = '';
@@ -66,5 +65,3 @@ $bpOptions['fullNotifications'] = 'true';
 
 // transaction speed: low/medium/high.   See API docs for more details.
 $bpOptions['transactionSpeed'] = 'low'; 
-
-?>
