@@ -56,6 +56,10 @@ current BTC exchange rate for presenting BTC prices to shoppers.
 * [Documentation](http://www.ubercart.org/docs)
 * [Forums](http://www.ubercart.org/forum)
 
+# Contribute
+
+To contribute to this project, please fork and submit a pull request.
+
 # License
 
 The MIT License (MIT)
