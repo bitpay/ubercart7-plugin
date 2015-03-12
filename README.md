@@ -2,6 +2,7 @@
 
 Bitcoin payment plugin for Drupal 7 Ubercart using the bitpay.com service.
 
+[![Build Status](https://travis-ci.org/bitpay/ubercart7-plugin.svg?branch=master)](https://travis-ci.org/bitpay/ubercart7-plugin)
 
 ## Quick Start Guide
 
