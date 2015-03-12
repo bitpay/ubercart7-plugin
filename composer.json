@@ -1,17 +1,29 @@
 {
-    "name": "bitpay/ubercart7-plugin",
-    "description": "Ubercart 7 plugin",
-    "type": "drupal-module",
-    "keywords": [],
+    "name": "bitpay/ubercart7",
+    "description": "BitPay payment plugin for Drupal 7 Ubercart",
+    "type": "ubercart7-plugin",
+    "keywords": ["ubercart","drupal","plugin","payment","ecommerce","bitcoin","bitpay"],
     "homepage": "https://github.com/bitpay/ubercart7-plugin",
     "license": "MIT",
     "support": {
         "email": "support@bitpay.com",
-        "issues": "librar://github.com/bitpay/ubercart7-plugin/issues",
+        "issues": "https://github.com/bitpay/ubercart7-plugin/issues",
         "source": "https://github.com/bitpay/ubercart7-plugin"
     },
     "minimum-stability": "stable",
-    "require": {},
+    "authors": [
+        {
+            "name": "BitPay Integrations Development Team",
+            "email": "integrations@bitpay.com",
+            "homepage": "https://bitpay.com/integrations"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "composer/installers": "~1.0"
+    },
     "require-dev": {
         "phpmd/phpmd": "*",
         "phpdocumentor/phpdocumentor": "*",
